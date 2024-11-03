@@ -1,3 +1,6 @@
+const prisma = require("../prisma/prisma");
+
+
 exports.register = (req, res) => {
     const {email, password} = req.body
     console.log(email, password)
