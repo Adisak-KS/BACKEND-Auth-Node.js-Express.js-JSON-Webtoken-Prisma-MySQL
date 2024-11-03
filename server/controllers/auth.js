@@ -1,5 +1,6 @@
 const prisma = require("../prisma/prisma");
 const bcrypt = require("bcrypt");
+const jwt = require('jsonwebtoken');
 
 
 exports.register = async (req, res) => {
@@ -63,6 +64,72 @@ exports.register = async (req, res) => {
     }
 }
 
-exports.login = (req, res) => {
-    res.send("Hello Login")
+exports.login = async (req, res) => {
+    try {
+        const { email, password } = req.body
+
+        if (!email) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email is required'
+            })
+        }
+
+        if (!password) {
+            return res.status(400).json({
+                success: false,
+                message: 'Password is required'
+            })
+        }
+
+
+        // Step 1 Check Email in DB
+        const user = await prisma.user.findUnique({
+            where: {
+                email: email
+            }
+        })
+
+
+        if (!user) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email not found'
+            })
+        }
+
+
+        // Step 2 Check Password
+        const isMatch = await bcrypt.compare(password, user.password)
+        if (!isMatch) {
+            return res.status(400).json({
+                success: false,
+                message: 'Password not match'
+            })
+        }
+
+        // Step 3 Create payload
+        const payload = {
+            user: {
+                id: user.id,
+                email: user.email,
+                role: user.role,
+            }
+        }
+
+        // Step 4 Create Token
+        const token = jwt.sign(payload, "kaiKa", {
+            expiresIn: "1d"
+        })
+
+        // console.log(token)
+        res.json({
+            user: payload.user,
+            token: token
+        })
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Server Error" });
+    }
+
 }

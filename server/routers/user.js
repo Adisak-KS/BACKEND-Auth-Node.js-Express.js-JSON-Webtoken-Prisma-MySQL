@@ -1,9 +1,11 @@
 const express = require("express");
 const router = express.Router();
 
-router.get("/users", (req, res) => {
-    res.send("Hello Users")
-})
+const { list, update, remove } = require("../controllers/user");
+
+router.get("/users", list);
+router.patch("/users/:userId", update);
+router.delete("/users/:userId", remove);
 
 
 module.exports = router
