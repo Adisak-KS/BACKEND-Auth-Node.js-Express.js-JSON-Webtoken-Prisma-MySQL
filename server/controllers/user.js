@@ -2,6 +2,7 @@ const prisma = require("../prisma/prisma");
 
 exports.list = async (req, res) => {
     try {
+        console.log('req.user',req.user)
         const user = await prisma.user.findMany()
         res.status(200).json(user)
 
